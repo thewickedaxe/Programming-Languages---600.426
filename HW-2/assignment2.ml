@@ -358,28 +358,6 @@ extra challenge!). We will only be testing you on strings that contain ASCII
 characters excluding control characters (newline and friends), the blackslash,
 or double quotes.
 *)
-let rec iterative_concat str_list =
-    match str_list with
-    | [] -> ""
-    | a::b -> if b = [] then simp_print a else match a with
-                                  | Int z -> string_of_int(z)^","^iterative_concat b
-                                  | Float z -> string_of_float(z)^","^iterative_concat b
-                                  | String z -> "\""^z^"\""^","^iterative_concat b
-                                  | List z -> "["^iterative_concat z^","^iterative_concat b^"]"
-                                  | Bool z -> string_of_bool(z)^","^iterative_concat b
-                                  | Null -> ""
-                                  |Assoc z -> ""
-and simp_print foo =
-                    match foo with
-                    | Int z -> string_of_int(z)
-                    | Float z -> string_of_float(z)
-                    | String z -> "\""^z^"\""
-                    | List z -> ""
-                    | Bool z -> string_of_bool(z)
-                    | Null -> ""
-                    |Assoc z -> ""
-;;
-
 let rec complicated_type_matcher jon =
     match jon with
     | Assoc stuff -> "{"^(list_tuple_extractor stuff)
@@ -405,6 +383,27 @@ and list_tuple_extractor daval =
              | (c, d) -> match b with
                          | [] -> simple_type_matcher c d^list_tuple_extractor b
                          | p::q -> simple_type_matcher c d^","^list_tuple_extractor b
+
+and iterative_concat str_list =
+    match str_list with
+    | [] -> ""
+    | a::b -> if b = [] then simp_print a else match a with
+                                  | Int z -> string_of_int(z)^","^iterative_concat b
+                                  | Float z -> string_of_float(z)^","^iterative_concat b
+                                  | String z -> "\""^z^"\""^","^iterative_concat b
+                                  | List z -> "["^iterative_concat z^","^iterative_concat b^"]"
+                                  | Bool z -> string_of_bool(z)^","^iterative_concat b
+                                  | Null -> ""
+                                  | Assoc z -> complicated_type_matcher a^"}"^","^iterative_concat b
+and simp_print foo =
+                    match foo with
+                    | Int z -> string_of_int(z)
+                    | Float z -> string_of_float(z)
+                    | String z -> "\""^z^"\""
+                    | List z -> "]"
+                    | Bool z -> string_of_bool(z)
+                    | Null -> ""
+                    | Assoc z -> complicated_type_matcher foo^"}"
 ;;
 
 let string_of_json jsn =
@@ -443,7 +442,26 @@ function only needs to work on json data that at the top level is an Assoc.
 Invoke invalid_arg in other cases. Additionally, invoke invalid_arg if key
 s isn't one of the keys in the top level Assoc. *)
 
-let lookup jsn s = failwith "Not Implemented";;
+let rec percolate top_level s =
+	match top_level with
+	| []->invalid_arg "invalid args"
+	| a::b -> sift s a b
+and
+	sift key s b=
+	match s with
+	| (k,l) -> if (k=key) then l else percolate b key;;
+
+let lookup jsn s=
+	match jsn with
+	| Assoc a -> percolate a s
+    | Int z -> failwith "Invalid Logic"
+    | Float z -> failwith "Invalid Logic"
+    | String z -> failwith "Invalid Logic"
+    | Null -> failwith "Invalid Logic"
+    | List z -> failwith "Invalid Logic"
+    | Bool z -> failwith "Invalid Logic"
+;;
+
 
 (*
 
@@ -489,9 +507,56 @@ invalid_arg if key s isn't one of the keys in any of the Assoc's in jsn.
 You should traverse Assoc's and List's in order, returning the first value
 that matches the key being search for.
 *)
+let rec complicated_type_matcher jon search_key =
+    match jon with
+    | Assoc stuff -> list_tuple_extractor stuff search_key
+    | Int z -> [Assoc([("importance", Int 0)])]
+    | Float z -> [Assoc([("importance", Int 0)])]
+    | String z -> [Assoc([("importance", Int 0)])]
+    | Null  -> [Assoc([("importance", Int 0)])]
+    | List z -> [Assoc([("importance", Int 0)])]
+    | Bool z -> [Assoc([("importance", Int 0)])]
+and simple_type_matcher key value search_key=
+    match value with
+    | Int z -> [Assoc([("importance", Int 0)])]
+    | Float z -> [Assoc([("importance", Int 0)])]
+    | String z -> [Assoc([("importance", Int 0)])]
+    | Null  -> [Assoc([("importance", Int 0)])]
+    | List z -> iterative_concat z search_key
+    | Bool z -> [Assoc([("importance", Int 0)])]
+    | Assoc z -> list_tuple_extractor z search_key
+and list_tuple_extractor daval search_key =
+    match daval with
+    | [] -> [Assoc([("importance", Int 0)])]
+    | a::b -> match a with
+             | (c, d) -> if c = search_key then [d] else
+                         match b with
+                         | [] -> simple_type_matcher c d search_key @list_tuple_extractor b search_key
+                         | p::q -> simple_type_matcher c d search_key@list_tuple_extractor b search_key
 
+and iterative_concat str_list search_key=
+    match str_list with
+    | [] -> [Assoc([("importance", Int 0)])]
+    | a::b -> if b = [] then simp_print a search_key else match a with
+                                  | Assoc z -> complicated_type_matcher a search_key@iterative_concat b search_key
+                                  | _ -> [Assoc([("importance", Int 0)])]
+and simp_print foo search_key=
+                    match foo with
+                    | Assoc z -> complicated_type_matcher foo search_key
+                    | _ -> [Assoc([("importance", Int 0)])]
+;;
 
-let deep_lookup jsn s = failwith "Not Implemented";;
+let rec json_list_result_lookup lst =
+    match lst with
+    | [] -> failwith "key not found"
+    | hd::tl -> match hd with
+                | Assoc z -> json_list_result_lookup tl
+                | _ -> hd
+
+let deep_lookup jsn key =
+    let qualifying_json = complicated_type_matcher jsn key in
+        json_list_result_lookup qualifying_json   
+;;
 
 (*
 
