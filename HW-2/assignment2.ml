@@ -152,6 +152,8 @@ let smart_mul a b =
 
 let smart_div a b =
     match (a, b) with
+    | (_, Int(0)) -> invalid_arg "div by zero"
+    | (_, Float(0.)) -> invalid_arg "div by zero"
     | (Float(c), Float(d)) -> Float(c /. d)
     | (Int(c), Int(d)) -> Int(c/d)
     | (Float(c), Int(d)) -> Float(c /. float_of_int(d))
