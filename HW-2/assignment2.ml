@@ -152,8 +152,8 @@ let smart_mul a b =
 
 let smart_div a b =
     match (a, b) with
-    | (_, Int(0)) -> invalid_arg "div by zero"
-    | (_, Float(0.)) -> invalid_arg "div by zero"
+    | (_, Int(0)) -> invalid_arg "division by zero"
+    | (_, Float(0.)) -> invalid_arg "division by zero"
     | (Float(c), Float(d)) -> Float(c /. d)
     | (Int(c), Int(d)) -> Int(c/d)
     | (Float(c), Int(d)) -> Float(c /. float_of_int(d))
@@ -165,7 +165,7 @@ let smart_add a b =
     | (Float(c), Float(d)) -> Float(c +. d)
     | (Int(c), Int(d)) -> Int(c+d)
     | (Float(c), Int(d)) -> Float(c +. float_of_int(d))
-    | (Int(c), Float(d)) -> Float(float_of_int(c) +. d)            
+    | (Int(c), Float(d)) -> Float(float_of_int(c) +. d)
 ;;
 
 let calculate tokenlist =
@@ -174,28 +174,28 @@ let calculate tokenlist =
         | [] -> List.hd operand_stack
         | a::b -> match a with
                 | Number(n) -> let new_operand_stack = n::operand_stack in  act_cal b new_operand_stack
-                | Plus -> let t1 = List.hd operand_stack in 
+                | Plus -> let t1 = List.hd operand_stack in
                           let rest_temp = List.tl operand_stack in
                           let t2 = List.hd rest_temp in
                           let rest = List.tl rest_temp in
                           let ans = smart_add t2 t1 in
                           let new_operand_stack = ans::rest in
                           act_cal b new_operand_stack
-                | Minus -> let t1 = List.hd operand_stack in 
+                | Minus -> let t1 = List.hd operand_stack in
                           let rest_temp = List.tl operand_stack in
                           let t2 = List.hd rest_temp in
                           let rest = List.tl rest_temp in
                           let ans = smart_min t2 t1 in
                           let new_operand_stack = ans::rest in
                           act_cal b new_operand_stack
-                | Mul -> let t1 = List.hd operand_stack in 
+                | Mul -> let t1 = List.hd operand_stack in
                           let rest_temp = List.tl operand_stack in
                           let t2 = List.hd rest_temp in
                           let rest = List.tl rest_temp in
                           let ans = smart_mul t2 t1 in
                           let new_operand_stack = ans::rest in
                           act_cal b new_operand_stack
-                | Div -> let t1 = List.hd operand_stack in 
+                | Div -> let t1 = List.hd operand_stack in
                           let rest_temp = List.tl operand_stack in
                           let t2 = List.hd rest_temp in
                           let rest = List.tl rest_temp in
@@ -249,14 +249,20 @@ to your file.
 
 This function should return a new (mutable) log structure. *)
 
-let make_log () = failwith "Not Implemented";;
+let make_log () =
+    let size = max_int/100000000000 in
+        Hashtbl.create size
+;;
 
 (* 3b. [5 points]
 
 This function should add a new entry (string s) to the end of a log. It should
 just return () since all it is doing is a side-effect.  *)
 
-let add_entry log s = failwith "Not Implemented";;
+let add_entry log s =
+    let table_len = Hashtbl.length log in
+        Hashtbl.add log table_len s;
+;;
 
 (* 3c. [5 points]
 
@@ -265,8 +271,14 @@ be exactly as in the example (concatenate the entries in order with one newline
 after every entry). Don't use print_string to print the output, just return a
 string result.  *)
 
-let dump log = failwith "Not Implemented";;
-
+let dump log =
+    let log_list = Hashtbl.fold (fun key value rest -> (key, value) :: rest) log [] in
+    let rec smash lst =
+        match lst with
+        | [] -> ""
+        | (_, log_line)::xs -> log_line^smash xs
+    in smash log_list
+;;
 (*
 
 let lg = make_log () ;;
