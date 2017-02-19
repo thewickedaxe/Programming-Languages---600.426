@@ -44,20 +44,11 @@ let x1 a = a,a;;
 
  (* val x1 : 'a -> 'a * 'a = ... *)
 
-let x2 a b =
-    a
-;;
+let x2 a b = a;;
 
  (* val x2 : 'a -> 'b -> 'a = ... *)
 
-let x3 () =
-    let myref = { contents = [1;2;3;4] } in
-    let myfun myrefarg =
-        myrefarg;
-    in
-    myfun myref
-;;
-
+let x3 () = { contents = [1;2;3;4] };;
 
  (* val x3 : unit -> int list ref = ... *)
 
@@ -90,7 +81,9 @@ let rec x6 lst1 lst2 func =
 (* val x6 : 'a list -> 'b list -> ('a -> 'b -> 'c) -> 'c = ... *)
 
 let x7 a =
-    Obj.magic a
+    match a with
+    | Some int ->
+    | None -> None
 ;;
 
 (* val x7 : 'a -> 'b option *)
@@ -169,7 +162,8 @@ let smart_add a b =
 ;;
 
 let calculate tokenlist =
-    let rec act_cal tokenlist operand_stack =
+    let rec verify_validity tokenlist operand_count operator_count tokenlist_preserve=
+        let rec act_cal tokenlist operand_stack =
         match tokenlist with
         | [] -> List.hd operand_stack
         | a::b -> match a with
@@ -202,7 +196,16 @@ let calculate tokenlist =
                           let ans = smart_div t2 t1 in
                           let new_operand_stack = ans::rest in
                           act_cal b new_operand_stack
-    in act_cal tokenlist []
+    in
+    match tokenlist with
+    | [] -> if (operator_count+1) = operand_count then act_cal tokenlist_preserve [] else invalid_arg "ill-formed expression"
+    | a::b -> match a with
+              | Number n -> verify_validity b (operand_count+1) operator_count tokenlist_preserve
+              | Plus -> verify_validity b operand_count (operator_count+1) tokenlist_preserve
+              | Minus -> verify_validity b operand_count (operator_count+1) tokenlist_preserve
+              | Mul -> verify_validity b operand_count (operator_count+1) tokenlist_preserve
+              | Div -> verify_validity b operand_count (operator_count+1) tokenlist_preserve
+    in verify_validity tokenlist 0 0 tokenlist
 ;;
 
 (*
@@ -355,10 +358,58 @@ extra challenge!). We will only be testing you on strings that contain ASCII
 characters excluding control characters (newline and friends), the blackslash,
 or double quotes.
 *)
+let rec iterative_concat str_list =
+    match str_list with
+    | [] -> ""
+    | a::b -> if b = [] then simp_print a else match a with
+                                  | Int z -> string_of_int(z)^","^iterative_concat b
+                                  | Float z -> string_of_float(z)^","^iterative_concat b
+                                  | String z -> "\""^z^"\""^","^iterative_concat b
+                                  | List z -> "["^iterative_concat z^","^iterative_concat b^"]"
+                                  | Bool z -> string_of_bool(z)^","^iterative_concat b
+                                  | Null -> ""
+                                  |Assoc z -> ""
+and simp_print foo =
+                    match foo with
+                    | Int z -> string_of_int(z)
+                    | Float z -> string_of_float(z)
+                    | String z -> "\""^z^"\""
+                    | List z -> ""
+                    | Bool z -> string_of_bool(z)
+                    | Null -> ""
+                    |Assoc z -> ""
+;;
 
+let rec complicated_type_matcher jon =
+    match jon with
+    | Assoc stuff -> "{"^(list_tuple_extractor stuff)
+    | Int z -> ""
+    | Float z -> ""
+    | String z -> ""
+    | Null  -> ""
+    | List z -> ""
+    | Bool z -> ""
+and simple_type_matcher key value =
+    match value with
+    | Int z -> "\""^key^"\""^":"^string_of_int(z)
+    | Float z -> "\""^key^"\""^":"^string_of_float(z)
+    | String z -> "\""^key^"\""^":"^"\""^z^"\""
+    | Null  -> "\""^key^"\""
+    | List z -> "\""^key^"\""^":"^"["^iterative_concat z^"]"
+    | Bool z -> "\""^key^"\""^":"^string_of_bool(z)
+    | Assoc z -> "\""^key^"\""^":"^"{"^(list_tuple_extractor z)^"}"
+and list_tuple_extractor daval =
+    match daval with
+    | [] -> ""
+    | a::b -> match a with
+             | (c, d) -> match b with
+                         | [] -> simple_type_matcher c d^list_tuple_extractor b
+                         | p::q -> simple_type_matcher c d^","^list_tuple_extractor b
+;;
 
-let string_of_json jsn = failwith "Not Implemented";;
-
+let string_of_json jsn =
+    complicated_type_matcher jsn^"}"
+;;
 (*
 
 # string_of_json(Assoc[]);;
