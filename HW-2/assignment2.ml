@@ -496,20 +496,11 @@ that matches the key being search for.
 let rec complicated_finder jon search_key =
     match jon with
     | Assoc stuff -> list_tuple_searcher stuff search_key
-    | Int z -> [Assoc([("importance", Int 0)])]
-    | Float z -> [Assoc([("importance", Int 0)])]
-    | String z -> [Assoc([("importance", Int 0)])]
-    | Null  -> [Assoc([("importance", Int 0)])]
-    | List z -> [Assoc([("importance", Int 0)])]
-    | Bool z -> [Assoc([("importance", Int 0)])]
+    | _ -> [Assoc([("importance", Int 0)])]
 and simple_finder key value search_key=
     match value with
-    | Int z -> [Assoc([("importance", Int 0)])]
-    | Float z -> [Assoc([("importance", Int 0)])]
-    | String z -> [Assoc([("importance", Int 0)])]
-    | Null  -> [Assoc([("importance", Int 0)])]
+    | _ -> [Assoc([("importance", Int 0)])]
     | List z -> iterative_search z search_key
-    | Bool z -> [Assoc([("importance", Int 0)])]
     | Assoc z -> list_tuple_searcher z search_key
 and list_tuple_searcher daval search_key =
     match daval with
@@ -607,9 +598,25 @@ As with deep_lookup, json_filter should traverse into both Assoc's and List's.
 Calling the function with a json value that isn't either should return the
 value unchanged.
 *)
+let rec complicated_filter lst filter =
+    match lst with
+    | [] -> [Assoc([])]
+    | hd::tl -> match hd with
+                | (p1, p2) -> if (filter p1) then complicated_filter tl filter else
+                              match p2 with
+                              | Assoc inner -> complicated_filter inner filter @ complicated_filter tl filter
+                              | List inner -> complicated_filter inner filter @ complicated_filter tl filter
 
-let json_filter jsn filter = failwith "Not Implemented";;
+let sanity_filter jon filter =
+    match jon with
+    | Assoc stuff -> complicated_filter stuff filter
+    | List z -> complicated_filter jon filter
+    | _ -> invalid_arg "Assoc or List not top level"
+;;
 
+let json_filter jsn filter = 
+    sanity_filter jsn filter
+;;    
 (*
 
 # let person = Assoc([
