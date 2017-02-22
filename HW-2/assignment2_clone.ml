@@ -2,8 +2,8 @@
 
 PoPL Assignment 2
 
-Name                  :
-List of Collaborators :
+Name                  : Srinivas Suresh Kumar
+List of Collaborators : Myself and Rohit Ravoori
 
 Please make a good faith effort at listing people you discussed any problems
 with here, as per the course academic integrity policy. TA/CA/Prof need not be
@@ -31,13 +31,14 @@ For this problem, you must produce an expression which has a given type.  It
 does not matter what expression you provide as long as it has that type; there
 may be numerous (or even infinite) answers for each question.  Your answer may
 *not* produce a compiler warning.  You are *not* permitted to use explicit type
-annotations using ":" (such as "fun x:'a -> x").  Also please do not use any
+annotations using ":" (such as "fun x:'a -> x;;").  Also please do not use any
 libraries for this question such as List.map etc. You *may* use mutable state to
 define x3.
 
 [20 Points]
 
  *)
+
 
 let x1 a = a,a;;
 
@@ -249,6 +250,16 @@ to your file.
 
 This function should return a new (mutable) log structure. *)
 
+let make_log () =
+    let size = max_int/100000000000 in
+        Hashtbl.create size
+;;
+
+(* 3b. [5 points]
+
+This function should add a new entry (string s) to the end of a log. It should
+just return () since all it is doing is a side-effect.  *)
+
 let add_entry log s =
     let table_len = Hashtbl.length log in
         Hashtbl.add log table_len s;
@@ -269,7 +280,6 @@ let dump log =
         | (_, log_line)::xs -> log_line^smash xs
     in smash log_list
 ;;
-
 (*
 
 let lg = make_log () ;;
@@ -346,8 +356,6 @@ extra challenge!). We will only be testing you on strings that contain ASCII
 characters excluding control characters (newline and friends), the blackslash,
 or double quotes.
 *)
-
-
 let rec complicated_type_matcher jon =
     match jon with
     | Assoc stuff -> "{"^(list_tuple_extractor stuff)
@@ -399,7 +407,6 @@ and simp_print foo =
 let string_of_json jsn =
     complicated_type_matcher jsn^"}"
 ;;
-
 (*
 
 # string_of_json(Assoc[]);;
@@ -435,7 +442,7 @@ s isn't one of the keys in the top level Assoc. *)
 
 let rec percolate top_level s =
 	match top_level with
-	| []-> invalid_arg "key not found"
+	| []->invalid_arg "invalid args"
 	| a::b -> sift s a b
 and
 	sift key s b=
@@ -445,8 +452,9 @@ and
 let lookup jsn s=
 	match jsn with
 	| Assoc a -> percolate a s
-    | _ -> invalid_arg "Assoc not top level"
+    | _ -> failwith "Invalid Logic"
 ;;
+
 
 (*
 
@@ -492,62 +500,54 @@ invalid_arg if key s isn't one of the keys in any of the Assoc's in jsn.
 You should traverse Assoc's and List's in order, returning the first value
 that matches the key being search for.
 *)
-
-let rec complicated_finder jon search_key =
+let rec complicated_type_matcher jon search_key =
     match jon with
-    | Assoc stuff -> list_tuple_searcher stuff search_key
+    | Assoc stuff -> list_tuple_extractor stuff search_key
     | Int z -> [Assoc([("importance", Int 0)])]
     | Float z -> [Assoc([("importance", Int 0)])]
     | String z -> [Assoc([("importance", Int 0)])]
     | Null  -> [Assoc([("importance", Int 0)])]
     | List z -> [Assoc([("importance", Int 0)])]
     | Bool z -> [Assoc([("importance", Int 0)])]
-and simple_finder key value search_key=
+and simple_type_matcher key value search_key=
     match value with
     | Int z -> [Assoc([("importance", Int 0)])]
     | Float z -> [Assoc([("importance", Int 0)])]
     | String z -> [Assoc([("importance", Int 0)])]
     | Null  -> [Assoc([("importance", Int 0)])]
-    | List z -> iterative_search z search_key
+    | List z -> iterative_concat z search_key
     | Bool z -> [Assoc([("importance", Int 0)])]
-    | Assoc z -> list_tuple_searcher z search_key
-and list_tuple_searcher daval search_key =
+    | Assoc z -> list_tuple_extractor z search_key
+and list_tuple_extractor daval search_key =
     match daval with
     | [] -> [Assoc([("importance", Int 0)])]
     | a::b -> match a with
              | (c, d) -> if c = search_key then [d] else
                          match b with
-                         | [] -> simple_finder c d search_key @list_tuple_searcher b search_key
-                         | p::q -> simple_finder c d search_key@list_tuple_searcher b search_key
+                         | [] -> simple_type_matcher c d search_key @list_tuple_extractor b search_key
+                         | p::q -> simple_type_matcher c d search_key@list_tuple_extractor b search_key
 
-and iterative_search str_list search_key=
+and iterative_concat str_list search_key=
     match str_list with
     | [] -> [Assoc([("importance", Int 0)])]
     | a::b -> if b = [] then simp_print a search_key else match a with
-                                  | Assoc z -> complicated_finder a search_key@iterative_search b search_key
+                                  | Assoc z -> complicated_type_matcher a search_key@iterative_concat b search_key
                                   | _ -> [Assoc([("importance", Int 0)])]
 and simp_print foo search_key=
                     match foo with
-                    | Assoc z -> complicated_finder foo search_key
+                    | Assoc z -> complicated_type_matcher foo search_key
                     | _ -> [Assoc([("importance", Int 0)])]
 ;;
 
-let sanity_check jon skey =
-    match jon with
-    | Assoc stuff -> list_tuple_searcher stuff skey
-    | List z -> complicated_finder jon skey
-    | _ -> invalid_arg "Assoc or List not top level"
-
-
 let rec json_list_result_lookup lst =
     match lst with
-    | [] -> invalid_arg "key not found"
+    | [] -> failwith "key not found"
     | hd::tl -> match hd with
                 | Assoc z -> json_list_result_lookup tl
                 | _ -> hd
 
 let deep_lookup jsn key =
-    let qualifying_json = sanity_check jsn key in
+    let qualifying_json = complicated_type_matcher jsn key in
         json_list_result_lookup qualifying_json   
 ;;
 
