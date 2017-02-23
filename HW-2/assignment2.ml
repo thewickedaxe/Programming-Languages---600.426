@@ -539,7 +539,7 @@ let rec json_list_result_lookup lst =
 
 let deep_lookup jsn key =
     let qualifying_json = sanity_check jsn key in
-        json_list_result_lookup qualifying_json   
+        json_list_result_lookup qualifying_json
 ;;
 
 (*
@@ -600,23 +600,26 @@ value unchanged.
 *)
 let rec complicated_filter lst filter =
     match lst with
-    | [] -> [Assoc([])]
+    | [] -> []
     | hd::tl -> match hd with
-                | (p1, p2) -> if (filter p1) then complicated_filter tl filter else
-                              match p2 with
-                              | Assoc inner -> complicated_filter inner filter @ complicated_filter tl filter
-                              | List inner -> complicated_filter inner filter @ complicated_filter tl filter
+                | (p1, p2) ->
+                              if (filter p1) then
+                                complicated_filter tl filter
+                              else
+                                match p2 with
+                                | Assoc inner -> (p1, Assoc(complicated_filter inner filter))::complicated_filter tl filter
+                                | List inner_list
+                                | _ -> hd::complicated_filter tl filter
 
 let sanity_filter jon filter =
     match jon with
-    | Assoc stuff -> complicated_filter stuff filter
-    | List z -> complicated_filter jon filter
+    | Assoc stuff -> Assoc(complicated_filter stuff filter)
     | _ -> invalid_arg "Assoc or List not top level"
 ;;
 
-let json_filter jsn filter = 
+let json_filter jsn filter =
     sanity_filter jsn filter
-;;    
+;;
 (*
 
 # let person = Assoc([
