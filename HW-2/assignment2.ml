@@ -499,9 +499,9 @@ let rec complicated_finder jon search_key =
     | _ -> [Assoc([("importance", Int 0)])]
 and simple_finder key value search_key=
     match value with
-    | _ -> [Assoc([("importance", Int 0)])]
     | List z -> iterative_search z search_key
     | Assoc z -> list_tuple_searcher z search_key
+    | _ -> [Assoc([("importance", Int 0)])]
 and list_tuple_searcher daval search_key =
     match daval with
     | [] -> [Assoc([("importance", Int 0)])]
@@ -602,19 +602,24 @@ let rec complicated_filter lst filter =
     match lst with
     | [] -> []
     | hd::tl -> match hd with
-                | (p1, p2) ->
-                              if (filter p1) then
+                | (p1, p2) -> if (filter p1) then
                                 complicated_filter tl filter
                               else
                                 match p2 with
                                 | Assoc inner -> (p1, Assoc(complicated_filter inner filter))::complicated_filter tl filter
-                                | List inner_list
+                                | List inner_list -> (p1, List(handle_lists inner_list filter))::complicated_filter tl filter
                                 | _ -> hd::complicated_filter tl filter
+and handle_lists lst filter=
+    match lst with
+    | [] -> lst
+    | a::b -> match a with
+              | Assoc list_inner -> Assoc(complicated_filter list_inner filter)::handle_lists b filter
+              | _ -> lst
 
 let sanity_filter jon filter =
     match jon with
     | Assoc stuff -> Assoc(complicated_filter stuff filter)
-    | _ -> invalid_arg "Assoc or List not top level"
+    | a -> a
 ;;
 
 let json_filter jsn filter =
