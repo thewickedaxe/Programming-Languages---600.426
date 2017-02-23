@@ -249,9 +249,17 @@ to your file.
 
 This function should return a new (mutable) log structure. *)
 
+let make_log () =
+    { contents = ""}
+;;
+
+(* 3b. [5 points]
+
+This function should add a new entry (string s) to the end of a log. It should
+just return () since all it is doing is a side-effect.  *)
+
 let add_entry log s =
-    let table_len = Hashtbl.length log in
-        Hashtbl.add log table_len s;
+    log.contents <- log.contents^s^"\n"
 ;;
 
 (* 3c. [5 points]
@@ -262,12 +270,7 @@ after every entry). Don't use print_string to print the output, just return a
 string result.  *)
 
 let dump log =
-    let log_list = Hashtbl.fold (fun key value rest -> (key, value) :: rest) log [] in
-    let rec smash lst =
-        match lst with
-        | [] -> ""
-        | (_, log_line)::xs -> log_line^smash xs
-    in smash log_list
+    log.contents
 ;;
 
 (*
