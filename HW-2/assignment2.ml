@@ -2,8 +2,8 @@
 
 PoPL Assignment 2
 
-Name                  :
-List of Collaborators :
+Name                  : Srinivas Suresh Kumar
+List of Collaborators : Myself and Rohit Ravoori
 
 Please make a good faith effort at listing people you discussed any problems
 with here, as per the course academic integrity policy. TA/CA/Prof need not be
