@@ -1,0 +1,266 @@
+#
+# Adapted from sample Makefile for Objective Caml
+# Copyright (C) 2001 Jean-Christophe FILLIATRE
+# 
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Library General Public
+# License version 2, as published by the Free Software Foundation.
+# 
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# 
+# See the GNU Library General Public License version 2 for more details
+# (enclosed in the file LGPL).
+
+# This Makefile assumes GNU Make in order to generalize over the different
+# interpreters in the development kit.
+
+default: all
+
+# global variable declarations
+VERSION = $(shell cat version.txt)
+PROJECT = fbdk
+INTERPRETERS = Fb FbSR BOOL FbExt TFbSRX AFbV
+
+# functions for use throughout the Makefile
+lowercase = $(subst A,a,$(subst B,b,$(subst C,c,$(subst D,d,$(subst E,e,$(subst F,f,$(subst G,g,$(subst H,h,$(subst I,i,$(subst J,j,$(subst K,k,$(subst L,l,$(subst M,m,$(subst N,n,$(subst O,o,$(subst P,p,$(subst Q,q,$(subst R,r,$(subst S,s,$(subst T,t,$(subst U,u,$(subst V,v,$(subst W,w,$(subst X,x,$(subst Y,y,$(subst Z,z,$1))))))))))))))))))))))))))
+interpdir = $(SRCDIR)/$1
+interppfx = $(call interpdir,$1)/$(call lowercase,$1)
+interpcmos_for_pfx = $(CMO) \
+	$(foreach sfx,\
+		options.cmo \
+		ast.cmo \
+		parser.cmo \
+		pp.cmo \
+		type.cmo \
+		lexer.cmo \
+		interp.cmo \
+		.cmo \
+		,$1$(sfx))
+interpcmos = $(call interpcmos_for_pfx,$(call interppfx,$1))
+interpcmxs_for_pfx = $(patsubst %.cmo,%.cmx,$(call interpcmos_for_pfx,$1))
+interpcmxs = $(patsubst %.cmo,%.cmx,$(call interpcmos,$1))
+interpcmis_for_pfx = $(patsubst %.cmo,%.cmi,$(call interpcmos_for_pfx,$1))
+interpcmis = $(patsubst %.cmo,%.cmi,$(call interpcmos,$1))
+
+# where to install the binaries
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+BINDIR=@bindir@
+
+# where to install the man page
+MANDIR=@mandir@
+
+# other variables set by ./configure
+OCAMLC   = @OCAMLC@
+OCAMLOPT = @OCAMLOPT@
+OCAMLDEP = @OCAMLDEP@
+OCAMLLEX = @OCAMLLEX@
+OCAMLYACC= @OCAMLYACC@
+OCAMLLIB = @OCAMLLIB@
+OCAMLVERSION = @OCAMLVERSION@
+OCAMLWEB = @OCAMLWEB@
+
+# we use byte for OCAMLBEST instead of the @OCAMLBEST@ for sake of debugging
+OCAMLBEST= byte
+
+EXPORT = export
+TEMPLATES = templates
+SRCDIR = src
+INTERPDIRS = $(foreach interp,$(INTERPRETERS),$(call interpdir,$(interp)))
+
+DIRS = $(SRCDIR) $(INTERPDIRS)
+
+INCLUDES = -I $(SRCDIR) $(foreach interpdir,$(INTERPDIRS),-I $(interpdir))
+BFLAGS = -g $(INCLUDES)
+OFLAGS = $(INCLUDES)
+
+CMO = $(SRCDIR)/version.cmo \
+	$(SRCDIR)/fbdk.cmo \
+	$(SRCDIR)/application.cmo
+
+.PHONY: $(foreach interp,$(INTERPRETERS),all_$(interp)) 
+$(foreach interp,$(INTERPRETERS),all_$(interp)): all_%: $(OCAMLBEST)
+	cp -f $(call interppfx,$(patsubst all_%,%,$@)).$(OCAMLBEST) ./$(patsubst all_%,%,$@)
+
+.PHONY: all
+all: $(OCAMLBEST) $(foreach interp,$(INTERPRETERS),all_$(interp))
+
+GENERATED_PER_INTERPRETER = parser.ml parser.mli lexer.ml 
+GENERATED = $(SRCDIR)/version.ml \
+	$(foreach interp,$(INTERPRETERS),\
+		$(foreach sfx,$(GENERATED_PER_INTERPRETER),\
+			$(call interppfx,$(interp))$(sfx)))
+
+byte: $(foreach interp,$(INTERPRETERS),$(call interppfx,$(interp)).byte)
+opt: $(foreach interp,$(INTERPRETERS),$(call interppfx,$(interp)).opt)
+
+$(foreach interp,$(INTERPRETERS),$(call interppfx,$(interp)).byte): %.byte: $(call interpcmos_for_pfx,%)
+	$(OCAMLC) $(BFLAGS) -o $@ $^
+
+$(foreach interp,$(INTERPRETERS),$(call interppfx,$(interp)).opt): %.opt: $(call interpcmxs_for_pfx,%)
+	$(OCAMLOPT) $(OFLAGS) -o $@ $^
+
+$(SRCDIR)/version.ml: Makefile
+	echo "let version = \""$(VERSION)"\"" > $(SRCDIR)/version.ml
+	echo "let date = \""`date`"\"" >> $(SRCDIR)/version.ml
+
+# installation
+##############
+
+.PHONY: install_bindir
+install_bindir:
+	mkdir -p $(BINDIR)
+
+.PHONY: $(foreach interp,$(INTERPRETERS),install_$(interp))
+$(foreach interp,$(INTERPRETERS),install_$(interp)): install_%:
+	echo $(call interppfx,%).byte
+	cp $(call interppfx,$(patsubst install_%,%,$@)).$(OCAMLBEST) $(BINDIR)/$(patsubst install_%,%,$@)
+
+.PHONY: install
+install: $(OCAMLBEST) install_bindir $(foreach interp,$(INTERPRETERS),install_$(interp))
+
+# export
+########
+
+EXPORTDIR=$(PROJECT)-$(VERSION)
+TAR=$(EXPORTDIR).tar
+BINARY = $(EXPORTDIR)-byte
+BINARY_LIBS = $(BINARY)/lib
+
+FILES = $(TEMPLATES)/*.ml version.txt $(SRCDIR)/*.ml* \
+	$(foreach interp,$(INTERPRETERS),$(call interpdir,$(interp))/*.ml*) \
+	Makefile.in configure configure.in win32Build.bat        \
+	.depend README INSTALL COPYING CHANGES
+
+export_dir:
+	mkdir -p $(EXPORT)/$(BINARY)
+	mkdir -p $(EXPORT)/$(BINARY_LIBS)
+
+.PHONY: $(foreach interp,$(INTERPRETERS),export_$(interp))
+$(foreach interp,$(INTERPRETERS),export_$(interp)): export_%: export_dir
+	cp $(call interppfx,$(patsubst export_%,%,$@)).byte $(EXPORT)/$(BINARY)/
+	#cp $(call interpcmos_for_pfx,$(patsubst export_%,%,$@)) $(EXPORT)/$(BINARY_LIBS)/
+	cp $(call interpcmos,$(patsubst export_%,%,$@)) $(EXPORT)/$(BINARY_LIBS)/
+	cp $(call interpcmis,$(patsubst export_%,%,$@)) $(EXPORT)/$(BINARY_LIBS)/
+
+export: source byte export_dir $(foreach interp,$(INTERPRETERS),export_$(interp))
+	(cd $(EXPORT); tar czf $(BINARY).tar.gz $(BINARY))
+
+source:
+	mkdir -p $(EXPORT)/$(EXPORTDIR)
+	tar c $(FILES) | tar x -C $(EXPORT)/$(EXPORTDIR)
+	(cd $(EXPORT)/$(EXPORTDIR); rm -f $(GENERATED))
+	(cd $(EXPORT) ; tar cf $(TAR) $(EXPORTDIR) ; gzip -f --best $(TAR))
+
+.PHONY: $(foreach interp,$(INTERPRETERS),student-source_$(interp))
+$(foreach interp,$(INTERPRETERS),student-source_$(interp)): student-source_%:
+	( if test -d $(TEMPLATES)/$(patsubst student-source_%,%,$@); then \
+		cp -f $(TEMPLATES)/$(patsubst student-source_%,%,$@)/* $(EXPORT)/$(EXPORTDIR)/$(call interpdir,$(patsubst student-source_%,%,$@)); \
+	  fi )
+
+.PHONY: student-source
+student-source: source $(foreach interp,$(INTERPRETERS),student-source_$(interp))
+	(cd $(EXPORT) ; tar cf $(TAR) $(EXPORTDIR) ; gzip -f --best $(TAR))
+
+.PHONY: binary_dir
+binary_dir:
+	mkdir -p $(EXPORT)/$(BINARY)	
+
+.PHONY: $(foreach interp,$(INTERPRETERS),binary_$(interp))
+$(foreach interp,$(INTERPRETERS),binary_$(interp)): binary_%: $(OCAMLBEST)
+	cp $(call interppfx,$(patsubst binary_%,%,$@)).$(OCAMLBEST) $(EXPORT)/$(BINARY)/$(interp)
+
+.PHONY: binary
+binary: $(OCAMLBEST) binary_dir $(foreach interp,$(INTERPRETERS),binary_$(interp)) 
+	(cd $(EXPORT); tar czf $(BINARY).tar.gz $(BINARY))
+
+# generic rules
+###############
+
+.SUFFIXES: .mli .ml .cmi .cmo .cmx .mll .mly .tex .dvi .ps .html
+
+.mli.cmi:
+	$(OCAMLC) -c $(BFLAGS) $<
+
+.ml.cmo:
+	$(OCAMLC) -c $(BFLAGS) $<
+
+.ml.o:
+	$(OCAMLOPT) -c $(OFLAGS) $<
+
+.ml.cmx:
+	$(OCAMLOPT) -c $(OFLAGS) $<
+
+.mll.ml:
+	$(OCAMLLEX) $<
+
+.mly.ml:
+	$(OCAMLYACC) -v $<
+
+.mly.mli:
+	$(OCAMLYACC) -v $<
+
+# Emacs tags
+############
+
+tags:
+	find . -name "*.ml*" | sort -r | xargs \
+	etags "--regex=/let[ \t]+\([^ \t]+\)/\1/" \
+	      "--regex=/let[ \t]+rec[ \t]+\([^ \t]+\)/\1/" \
+	      "--regex=/and[ \t]+\([^ \t]+\)/\1/" \
+	      "--regex=/type[ \t]+\([^ \t]+\)/\1/" \
+              "--regex=/exception[ \t]+\([^ \t]+\)/\1/" \
+	      "--regex=/val[ \t]+\([^ \t]+\)/\1/" \
+	      "--regex=/module[ \t]+\([^ \t]+\)/\1/"
+
+# Makefile is rebuilt whenever Makefile.in or configure.in is modified
+######################################################################
+
+Makefile: Makefile.in config.status
+	./config.status
+
+config.status: configure
+	./config.status --recheck
+
+#configure: configure.in
+#	autoconf 
+
+# clean
+#######
+
+.PHONY: $(foreach interp,$(INTERPRETERS),clean_$(interp))
+$(foreach interp,$(INTERPRETERS),clean_$(interp)): clean_%:
+	rm -f $(foreach sfx,byte opt,$(call interppfx,$(patsubst clean_%,%,$@)).$(sfx))
+	rm -f $(patsubst clean_%,%,$@)
+
+.PHONY: clean
+clean: $(foreach interp,$(INTERPRETERS),clean_$(interp))
+	for i in $(DIRS); do \
+		rm -f $$i/*.cm[iox] $$i/*.o $$i/*~ $$i/*.output; \
+	done
+	rm -f $(GENERATED)
+	rm -rf $(EXPORT)
+
+dist-clean distclean:: clean
+	rm -f Makefile config.cache config.log config.status
+
+# depend
+########
+
+.depend depend:: $(GENERATED) 
+	rm -f .depend
+	(for i in $(DIRS); do \
+		$(OCAMLDEP) $(INCLUDES) $$i/*.ml $$i/*.mli; \
+	 done) > .depend
+
+include .depend
+
+
+
+
+
+
+
+

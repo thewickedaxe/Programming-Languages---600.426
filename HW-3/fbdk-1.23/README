@@ -1,0 +1,10 @@
+Build Instructions
+======================================================================
+
+To build the FbDK, execute the following commands:
+
+# ./configure
+# make
+
+The binaries will be placed in the this directory.  Once the configure
+has been run once, you will not need to do it again.
