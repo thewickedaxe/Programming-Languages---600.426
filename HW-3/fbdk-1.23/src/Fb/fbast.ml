@@ -8,4 +8,3 @@ type expr =
  If of expr * expr * expr | Int of int | Bool of bool
 
 type fbtype = TInt | TBool | TArrow of fbtype * fbtype | TVar of string;;
-
