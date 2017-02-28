@@ -29,8 +29,8 @@ src/Fb/fbparser.cmx : src/Fb/fbast.cmx src/Fb/fbparser.cmi
 src/Fb/fbparser.cmi : src/Fb/fbast.cmo
 src/Fb/fbpp.cmo : src/Fb/fbast.cmo
 src/Fb/fbpp.cmx : src/Fb/fbast.cmx
-src/Fb/fbtype.cmo : src/Fb/fbpp.cmo src/Fb/fbast.cmo
-src/Fb/fbtype.cmx : src/Fb/fbpp.cmx src/Fb/fbast.cmx
+src/Fb/fbtype.cmo : src/fbdk.cmo src/Fb/fbast.cmo
+src/Fb/fbtype.cmx : src/fbdk.cmx src/Fb/fbast.cmx
 src/FbSR/fbdktoploop.cmo : src/FbSR/fbsrpp.cmo src/FbSR/fbsrparser.cmi \
     src/FbSR/fbsrlexer.cmo src/FbSR/fbsrinterp.cmo src/FbSR/fbsrast.cmo
 src/FbSR/fbdktoploop.cmx : src/FbSR/fbsrpp.cmx src/FbSR/fbsrparser.cmx \
@@ -98,8 +98,8 @@ src/FbExt/fbextparser.cmx : src/FbExt/fbextast.cmx src/FbExt/fbextparser.cmi
 src/FbExt/fbextparser.cmi : src/FbExt/fbextast.cmo
 src/FbExt/fbextpp.cmo : src/FbExt/fbextast.cmo
 src/FbExt/fbextpp.cmx : src/FbExt/fbextast.cmx
-src/FbExt/fbexttype.cmo : src/FbExt/fbextast.cmo
-src/FbExt/fbexttype.cmx : src/FbExt/fbextast.cmx
+src/FbExt/fbexttype.cmo : src/FbExt/fbextast.cmo src/fbdk.cmo
+src/FbExt/fbexttype.cmx : src/FbExt/fbextast.cmx src/fbdk.cmx
 src/TFbSRX/fbdktoploop.cmo : src/TFbSRX/tfbsrxtype.cmo \
     src/TFbSRX/tfbsrxpp.cmo src/TFbSRX/tfbsrxparser.cmi \
     src/TFbSRX/tfbsrxlexer.cmo src/TFbSRX/tfbsrxinterp.cmo \
@@ -131,8 +131,10 @@ src/TFbSRX/tfbsrxparser.cmx : src/TFbSRX/tfbsrxast.cmx \
 src/TFbSRX/tfbsrxparser.cmi : src/TFbSRX/tfbsrxast.cmo
 src/TFbSRX/tfbsrxpp.cmo : src/TFbSRX/tfbsrxast.cmo
 src/TFbSRX/tfbsrxpp.cmx : src/TFbSRX/tfbsrxast.cmx
-src/TFbSRX/tfbsrxtype.cmo : src/TFbSRX/tfbsrxpp.cmo src/TFbSRX/tfbsrxast.cmo
-src/TFbSRX/tfbsrxtype.cmx : src/TFbSRX/tfbsrxpp.cmx src/TFbSRX/tfbsrxast.cmx
+src/TFbSRX/tfbsrxtype.cmo : src/TFbSRX/tfbsrxpp.cmo src/TFbSRX/tfbsrxast.cmo \
+    src/fbdk.cmo
+src/TFbSRX/tfbsrxtype.cmx : src/TFbSRX/tfbsrxpp.cmx src/TFbSRX/tfbsrxast.cmx \
+    src/fbdk.cmx
 src/TFbSRX/typecheck.cmo :
 src/TFbSRX/typecheck.cmx :
 src/AFbV/afbv.cmo : src/application.cmo src/AFbV/afbvtype.cmo \
@@ -143,10 +145,8 @@ src/AFbV/afbv.cmx : src/application.cmx src/AFbV/afbvtype.cmx \
     src/AFbV/afbvlexer.cmx src/AFbV/afbvinterp.cmx src/AFbV/afbvast.cmx
 src/AFbV/afbvast.cmo :
 src/AFbV/afbvast.cmx :
-src/AFbV/afbvinterp.cmo : src/AFbV/afbvpp.cmo src/AFbV/afbvoptions.cmo \
-    src/AFbV/afbvast.cmo
-src/AFbV/afbvinterp.cmx : src/AFbV/afbvpp.cmx src/AFbV/afbvoptions.cmx \
-    src/AFbV/afbvast.cmx
+src/AFbV/afbvinterp.cmo : src/AFbV/afbvast.cmo
+src/AFbV/afbvinterp.cmx : src/AFbV/afbvast.cmx
 src/AFbV/afbvlexer.cmo : src/AFbV/afbvparser.cmi
 src/AFbV/afbvlexer.cmx : src/AFbV/afbvparser.cmx
 src/AFbV/afbvoptions.cmo :
