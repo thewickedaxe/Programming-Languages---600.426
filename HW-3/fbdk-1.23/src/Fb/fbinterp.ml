@@ -22,7 +22,7 @@ let closure_check e =
     | Appl (e1, e2) -> (search id_so_far e1 && search id_so_far e2)
     | Function (i, e) -> (search ([i] @ id_so_far) e)
     | Var id -> ((List.mem id id_so_far))
-    | _ -> raise Invalid
+    | _ -> true
   in search [] e
 ;;
 
@@ -40,7 +40,7 @@ let rec subst id e fn =
       | Bool x -> Bool x
       | Appl (e1, e2) -> Appl (subst id e e1, subst id e e2)
       | Function (id_t, f_bod) -> if id_t = id then fn else Function (id_t, subst id e f_bod)
-      | _ -> raise Invalid
+      | _ -> fn
 ;;
 
 
@@ -64,17 +64,17 @@ let rec eval e =
                             | Bool(true) -> eval e2
                             | Bool(false) -> eval e3
                             | _ -> raise Wrongtype)
-        |Equal(e1, e2) -> (match (eval(e1), eval(e2)) with
+        | Equal(e1, e2) -> (match (eval(e1), eval(e2)) with
                           | (Int x, Int y) -> if x = y then Bool true else Bool false
                           | _ -> raise Wrongtype)
-        |Plus(e1, e2) -> (match (eval(e1), eval(e2)) with
+        | Plus(e1, e2) -> (match (eval(e1), eval(e2)) with
                           | (Int x, Int y) -> Int(x + y)
                           | _ -> raise Wrongtype)
-        |Minus(e1, e2) -> (match (eval(e1), eval(e2)) with
+        | Minus(e1, e2) -> (match (eval(e1), eval(e2)) with
                           | (Int x, Int y) -> Int(x - y)
                           | _ -> raise Wrongtype)
         | Appl (e1, e2) -> (match eval e1 with
-                           | Function (id, fn) -> eval (subst id (eval e2) fn)
+                           | Function (id, fn) -> eval (subst id (eval e2) fn) 
                            | _ -> raise Wrongtype)
         | Var id -> raise NotClosed
         | _ -> e

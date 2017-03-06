@@ -104,12 +104,13 @@ let fbMultiply =
 )
 (
   Function self_mul -> Function det_type -> Function op_1 -> Function op_2 -> Function product ->
-    If (det_type det_type op_1 op_1) = 1 Then (
-      If (det_type det_type op_2 op_2) = 1 Then (
-        If (op_1 = 1) Then product
-        Else (
-          self_mul det_type (op_1 - 1) op_2 (product + op_2)
-        )
+    If op_1 = 0 Then (
+      product
+    ) Else (
+      If (det_type det_type op_1 op_1) = 1 Then (
+        self_mul self_mul det_type (op_1 - 1) op_2 (product + op_2)
+      ) Else (
+        self_mul self_mul det_type (op_1 + 1) op_2 (product - op_2)
       )
     )
 )
@@ -123,9 +124,9 @@ let fbMultiply =
       )
      )
 )
-(4)
-(4)";;
-let fbDivide = "
+";;
+let fbDivide = 
+"
 (
   Function main_fn -> Function det_type -> Function operand_1 -> Function operand_2 -> main_fn main_fn det_type operand_1 operand_2 0
 )
@@ -186,8 +187,6 @@ let fbDivide = "
     )
    )
 )
-(0-9)
-(0-9)
 ";;
 let fbMod = "
 (
@@ -250,8 +249,6 @@ let fbMod = "
     )
    )
 )
-(5)
-(0-3)
 ";;
 
 (*
