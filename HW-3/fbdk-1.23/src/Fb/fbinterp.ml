@@ -7,8 +7,7 @@ exception Invalid;;
 (*
  * Replace this with your interpreter code.
  *)
-let closure_check e = 
-  let rec search id_so_far e = 
+let rec search id_so_far e = 
     match e with
     | Bool _ -> (true)
     | Int _ -> (true)
@@ -22,8 +21,11 @@ let closure_check e =
     | Appl (e1, e2) -> (search id_so_far e1 && search id_so_far e2)
     | Function (i, e) -> (search ([i] @ id_so_far) e)
     | Var id -> ((List.mem id id_so_far))
-    | _ -> true
-  in search [] e
+    | LetRec (id_1, id_2, e1, e2) -> (search (id_1 :: id_2 :: id_so_far) e1 && search (id_1 :: id_so_far) e2)
+;;
+
+let closure_check e = 
+  search [] e
 ;;
 
 let rec subst id e fn = 
@@ -40,7 +42,13 @@ let rec subst id e fn =
       | Bool x -> Bool x
       | Appl (e1, e2) -> Appl (subst id e e1, subst id e e2)
       | Function (id_t, f_bod) -> if id_t = id then fn else Function (id_t, subst id e f_bod)
-      | _ -> fn
+      | LetRec (id_1, id_2, e1, e2) -> if id != id_1 && id != id_2 then 
+                                        LetRec (id_1, id_2, subst id e e1, subst id e e2)
+                                       else if id = id_2 then 
+                                        LetRec (id_1, id_2, e1, subst id e e2)
+                                       else 
+                                        LetRec (id_1, id_2, e1, e2)
+        
 ;;
 
 
@@ -77,6 +85,9 @@ let rec eval e =
                            | Function (id, fn) -> eval (subst id (eval e2) fn) 
                            | _ -> raise Wrongtype)
         | Var id -> raise NotClosed
+        | LetRec (fn, me, e1, e2) -> let excess = 
+                                      subst fn (Function (me, (LetRec (fn, me, e1, Appl (Var fn, Var me))))) e1 in
+                                        eval (subst fn (Function (me, excess)) e2)
         | _ -> e
     else raise NotClosed
 ;;
