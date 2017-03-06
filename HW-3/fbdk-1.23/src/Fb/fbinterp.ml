@@ -75,11 +75,8 @@ let rec eval e =
                           | _ -> raise Wrongtype)
         | Appl (e1, e2) -> (match eval e1 with
                            | Function (id, fn) -> eval (subst id (eval e2) fn)
+                           | _ -> raise Wrongtype)
         | Var id -> raise NotClosed
-
-        | _ -> raise Wrongtype
-
-            )
         | _ -> e
     else raise NotClosed
 ;;
