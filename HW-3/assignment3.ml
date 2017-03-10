@@ -301,18 +301,35 @@ require the Y-combinator.
 
 (* Write a Fb function that takes a single dummy argument as input and returns a
 new empty dictionary *)
-let fbDictEmpty = "(0 1)" ;;
+let fbDictEmpty = "
+(Function pairmaker -> Function dummy -> (pairmaker 1394 1394))
+(Function lft -> Function rgt -> Function x -> x lft rgt)
+";;
 
 (* Write an Fb function that takes a dictionary, a key and a value and returns a
   new dictionary with the key mapped to the specified value.  *)
-let fbDictAdd = "(0 1)" ;;
+let fbDictAdd = "
+(Function pairmaker -> Function dict -> Function key -> Function value -> (pairmaker (pairmaker key value) dict))
+(Function lft -> Function rgt -> Function x -> x lft rgt)
+";;
 
 (* Write an Fb function that takes a dictionary and key as input and returns the
   value mapped to the key if any.  Fb does not provide a direct way to report
   errors. So in case the dictionary does not contain the key, your function
   should diverge.  *)
-
-let fbDictGet = "(0 1)" ;;
+let fbDictGet = "
+(Function main -> Function left -> Function right -> Function dict -> Function key -> main main left right dict key)
+(
+  Function self -> Function left -> Function right -> Function dict -> Function key ->
+    If (left (left (dict)) = key) Then (
+      right(left dict)
+    ) Else (
+      self self left right (right dict) key
+    )
+)
+((Function f -> Function c -> c f)(Function x -> Function y -> x))
+((Function f -> Function c -> c f)(Function x -> Function y -> y))
+";;
 
 (* Write an Fb function that takes a dictionary and a key as input and returns a
    new dictionary such that the key is no longer mapped. You are allowed to
@@ -328,7 +345,7 @@ examples, this is another way to build up Fb programs -- in AST-land and not str
 # let empty = Appl(parse fbDictEmpty, Int 0) ;;
 # let dict_a = eval ( Appl(Appl(Appl(parse fbDictAdd, empty), Int 1), Int 11) );;
 # let dict_b = eval ( Appl(Appl(Appl(parse fbDictAdd, dict_a), Int 2), Int 12) ) ;;
-# ppeval ( Appl(Appl(parse fbDictGet, dict_b), Int 1) ) ;;
+# ppeval ( Appl(Appl(parse fbDictGet, dict_a), Int 1) ) ;;
 ==> 11
 - : unit = ()
 # ppeval ( Appl(Appl(parse fbDictGet, dict_b), Int 2) ) ;;
