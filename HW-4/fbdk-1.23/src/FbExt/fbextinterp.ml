@@ -51,7 +51,7 @@ let rec subst id e fn =
       | Fst (e1) -> Fst(subst id e e1)
       | Snd (e1) -> Snd(subst id e e1)
       | Variant(n, e1) -> Variant(n, subst id e e1)
-      | Match(e1, e2) -> Match(subst id e e1, e2)
+      | Match(e1, e2) -> Match(subst id e e1, list_subst e2 id e)
       | Bool x -> Bool x
       | Let(id1, e1, e2) -> raise Wrongtype
       | Appl (e1, e2) -> Appl (subst id e e1, subst id e e2)
@@ -62,6 +62,10 @@ let rec subst id e fn =
                                         LetRec (id_1, id_2, e1, subst id e e2)
                                        else 
                                         LetRec (id_1, id_2, e1, e2)
+and list_subst pos_matches id e =
+    match pos_matches with
+    | (np, ip, vp)::tl -> (np, ip, (subst id e vp))::(list_subst tl id e)
+    | [] -> []
 ;;
 
 let rec eval e =
@@ -112,7 +116,7 @@ let rec eval e =
         | Snd(exPair) -> (match eval exPair with
                            | Pair(e1, e2) -> e2
                            | _ -> raise Wrongtype)
-        | Variant (n, e) -> (Variant(n, eval e))
+        | Variant (n, e) -> (Variant(n, (eval e)))
         | Match (expr, pos_matches) -> (variant_matcher expr pos_matches)
         | Appl (e1, e2) -> (match eval e1 with
                            | Function (id, fn) -> eval (subst id (eval e2) fn) 
@@ -125,7 +129,7 @@ let rec eval e =
         | _ -> e
     else raise NotClosed
 and variant_matcher exp pos_matches =
-    match eval exp with
+    match (eval exp) with
     | Variant(nv, vv) -> (match pos_matches with
                          | (np, ip, vp)::xs -> if np = nv then
                                                 eval vp
