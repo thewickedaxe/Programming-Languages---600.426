@@ -60,7 +60,7 @@ let pointExample2 = "Let p = ("^pointClass^")(2,3) In p p `iszero(0)";; (* shoul
 
 (* 2b. *)
 
-let send (ob,msg) = "(Function pr -> (Fst(pr))(Fst(pr))(Snd(pr)))"(* replace with macro *)
+let send (ob,msg) = ""^"("^ob^")"^"("^ob^")"^"("^msg^")"(* replace with macro *)
 
 (* Here is a test that should work exactly as written below with no editing *)
 
