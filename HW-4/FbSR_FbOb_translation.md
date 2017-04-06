@@ -2,8 +2,9 @@
 We are just going to encode objects on the fly as opposed to actually using classes. This is because the lifetime of the state or records is only the time of the expression itself.<br/>
 **Name:** Srinivas Suresh Kumar<br/>
 **JHED:** ssures11<br/>
-**Collaborators:** Rohit Ravoori
+**Collaborators:** Rohit Ravoori, Alex Owen<br/>
 
+**Note: There is nothing special about the getter and setter functions. They are absolutely the same ones from the textbook examples of FbOb. Therefore for brevity and neatness I am NOT redefining them here**
 
 1. *toFbOb*({label<sub>1</sub> = expression<sub>1</sub>; ... ; label<sub>n</sub> = expression<sub>n</sub>}) = <br/>
 **Object**<br/>
