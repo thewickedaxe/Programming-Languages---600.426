@@ -1,4 +1,3 @@
-# Generated automatically from Makefile.in by configure.
 #
 # Adapted from sample Makefile for Objective Caml
 # Copyright (C) 2001 Jean-Christophe FILLIATRE
@@ -46,24 +45,24 @@ interpcmis_for_pfx = $(patsubst %.cmo,%.cmi,$(call interpcmos_for_pfx,$1))
 interpcmis = $(patsubst %.cmo,%.cmi,$(call interpcmos,$1))
 
 # where to install the binaries
-prefix=/usr/local
-exec_prefix=${prefix}
-BINDIR=${exec_prefix}/bin
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+BINDIR=@bindir@
 
 # where to install the man page
-MANDIR=${prefix}/man
+MANDIR=@mandir@
 
 # other variables set by ./configure
-OCAMLC   = /home/srini/.opam/4.02.1/bin/ocamlc.opt
-OCAMLOPT = /home/srini/.opam/4.02.1/bin/ocamlopt.opt
-OCAMLDEP = /home/srini/.opam/4.02.1/bin/ocamldep
-OCAMLLEX = /home/srini/.opam/4.02.1/bin/ocamllex.opt
-OCAMLYACC= /home/srini/.opam/4.02.1/bin/ocamlyacc
-OCAMLLIB = /home/srini/.opam/4.02.1/lib/ocaml
-OCAMLVERSION = 4.02.1
-OCAMLWEB = /bin//true
+OCAMLC   = @OCAMLC@
+OCAMLOPT = @OCAMLOPT@
+OCAMLDEP = @OCAMLDEP@
+OCAMLLEX = @OCAMLLEX@
+OCAMLYACC= @OCAMLYACC@
+OCAMLLIB = @OCAMLLIB@
+OCAMLVERSION = @OCAMLVERSION@
+OCAMLWEB = @OCAMLWEB@
 
-# we use byte for OCAMLBEST instead of the opt for sake of debugging
+# we use byte for OCAMLBEST instead of the @OCAMLBEST@ for sake of debugging
 OCAMLBEST= byte
 
 EXPORT = export

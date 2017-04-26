@@ -54,13 +54,13 @@ BINDIR=${exec_prefix}/bin
 MANDIR=${prefix}/man
 
 # other variables set by ./configure
-OCAMLC   = /home/srini/.opam/4.02.1/bin/ocamlc.opt
-OCAMLOPT = /home/srini/.opam/4.02.1/bin/ocamlopt.opt
-OCAMLDEP = /home/srini/.opam/4.02.1/bin/ocamldep
-OCAMLLEX = /home/srini/.opam/4.02.1/bin/ocamllex.opt
-OCAMLYACC= /home/srini/.opam/4.02.1/bin/ocamlyacc
-OCAMLLIB = /home/srini/.opam/4.02.1/lib/ocaml
-OCAMLVERSION = 4.02.1
+OCAMLC   = /home/srini/.opam/4.04.0/bin/ocamlc.opt
+OCAMLOPT = /home/srini/.opam/4.04.0/bin/ocamlopt.opt
+OCAMLDEP = /home/srini/.opam/4.04.0/bin/ocamldep
+OCAMLLEX = /home/srini/.opam/4.04.0/bin/ocamllex.opt
+OCAMLYACC= /home/srini/.opam/4.04.0/bin/ocamlyacc
+OCAMLLIB = /home/srini/.opam/4.04.0/lib/ocaml
+OCAMLVERSION = 4.04.0
 OCAMLWEB = /bin//true
 
 # we use byte for OCAMLBEST instead of the opt for sake of debugging
